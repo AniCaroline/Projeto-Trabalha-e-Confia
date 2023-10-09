@@ -1,0 +1,57 @@
+/*********************************************** CRIAÇÃO DO BANCO ***************************************************
+CREATE DATABASE SISTEMASWEB
+
+*****************************************************************************************************/
+
+/**************************** PROCEDIMENTO PRA EXCLUSÃO DO BANCO [myind]
+USE [master]
+GO
+ALTER DATABASE [SISTEMASWEB] SET SINGLE_USER WITH ROLLBACK IMMEDIATE
+GO
+drop DATABASE [SISTEMASWEB]
+GO
+CREATE DATABASE [SISTEMASWEB] CONTAINMENT = NONE ON  PRIMARY ( NAME = N'SISTEMASWEB',
+FILENAME = N'C:\Aprendizado\Faculdade\SW.mdf' , SIZE = 32768KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB ) LOG ON 
+( NAME = N'PI4_log', FILENAME = N'C:\Aprendizado\Faculdade\SW.ldf' , SIZE = 32768KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ GO
+
+
+*****************************************************************************************************/
+use [SISTEMASWEB]
+go
+
+/***** CRIAÇÃO DA TABELA *****/
+
+DROP TABLE IF EXISTS vagas;
+CREATE TABLE vagas (
+    id VARCHAR(255),
+    idOrigem VARCHAR(255),
+    funcao VARCHAR(255),
+    municipio VARCHAR(255),
+    experiencia VARCHAR(255)
+)
+/**** PROCEDURE DE ARMAZENAMENTO QUE RECEBE OS DADOS EM JSON E VAI INSERIR NA TABELA 'vagas' ****/
+
+CREATE PROCEDURE inserir_vaga (@descricao_json NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @id INT
+    DECLARE @idOrigem INT
+	DECLARE @nome_vaga NVARCHAR(255)
+    DECLARE @funcao VARCHAR(255)
+    DECLARE @municipio VARCHAR(255)
+    DECLARE @experiencia BIT
+
+    SELECT 
+        @id = JSON_VALUE(@descricao_json, '$.id'),
+        @idOrigem = JSON_VALUE(@descricao_json, '$.idOrigem'),
+		@nome_vaga = JSON_VALUE(@descricao_json, '$.nome_vaga'),
+        @funcao = JSON_VALUE(@descricao_json, '$.funcao'),
+        @municipio = JSON_VALUE(@descricao_json, '$.municipio'),
+        @experiencia = CASE WHEN JSON_VALUE(@descricao_json, '$.experiencia') = 'true' THEN 1 ELSE 0 END
+
+    INSERT INTO vagas (id, idOrigem, nome_vaga, funcao, municipio, experiencia)
+    VALUES (@id, @idOrigem, @nome_vaga, @funcao, @municipio, @experiencia)
+END
+
+/**** CHAMA PROCEDURE DE ARMAZENAMENTI 'inserir_vagas' COM OS DADOS JSON DA API ****/
