@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Localizador de Vagas</title>
+  <style>
+    body {
+      background-color: #D8BFD8;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 30px;
+    }
+
+    .logo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 100px;
+      height: 100px;
+    }
+
+    .button-container {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .button {
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+ 
+  <h1>Bem-vindo ao seu localizador de Vagas</h1>
+
+  <div class="button-container">
+    <div>
+      <center><h2>Vaga</h2></center>  
+      <button class="button" onclick="escolherVaga()">Buscar Vagas</button>
+    </div>
+  </div>
+
+  <div id="tabela-container"></div>
+
+
+  <script  src="code.jquery.com_jquery-3.7.1.js"> </script>
+  <script>
+    function escolherVaga(){
+      fetch('http://localhost:5000/dados')
+      .then(function(response) {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Erro na requisição.');
+      })
+      .then(function(data) {
+        // Acessar a resposta da API
+        console.log(data);
+        
+        const tabelaContainer = document.getElementById('tabela-container');
+        // Cria a tabela
+        const tabela = document.createElement('table');
+
+        // Cria a linha de cabeçalho
+        const cabecalho = tabela.createTHead().insertRow();
+        for (const campo in data[0]) {
+          const th = document.createElement('th');
+          th.textContent = campo;
+          cabecalho.appendChild(th);
+        }
+
+        // Cria as linhas de dados
+        const corpoTabela = tabela.createTBody();
+        data.forEach(objeto => {
+          const linha = corpoTabela.insertRow();
+          for (const campo in objeto) {
+            const celula = linha.insertCell();
+            celula.textContent = objeto[campo];
+          }
+        });
+
+        // Adiciona a tabela ao elemento container
+        tabelaContainer.appendChild(tabela);
+
+        // Exibir a resposta no HTML
+        document.getElementById('resultado').textContent = JSON.stringify(data);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+    }
+  </script>
+</body>
+</html>
